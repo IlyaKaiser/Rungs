@@ -46,7 +46,11 @@ async function Page({ searchParams }) {
       />
 
       <Suspense key={selectedWeek} fallback={<Loading />}>
-        <WorkoutForWeek programId={program.id} selectedWeek={selectedWeek} />
+        <WorkoutForWeek
+          programId={program.id}
+          selectedWeek={selectedWeek}
+          clientId={client.id}
+        />
       </Suspense>
 
       <Tips coachName={client.coach.full_name} />

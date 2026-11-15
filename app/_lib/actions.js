@@ -277,7 +277,7 @@ export async function completeWorkout(workoutId) {
   if (!user) throw new Error("Not authenticated");
 
   const { data: client, error: clientErr } = await supabase
-    .from("client")
+    .from("clients")
     .select("id")
     .eq("profile_id", user.id)
     .single();
@@ -288,10 +288,10 @@ export async function completeWorkout(workoutId) {
   }
 
   const { error } = await supabase
-    .from("workouts")
+    .from("workout_completions")
     .upsert(
       { client_id: client.id, workout_id: workoutId },
-      { onConflict: "client_id, workout_id", ignoreDuplicates: true },
+      { onConflict: "client_id,workout_id", ignoreDuplicates: true },
     );
 
   if (error) {
@@ -393,7 +393,7 @@ export async function logSet({ exerciseId, setNumber, reps, weight, rpe }) {
   }
 
   const { data: client, error: clientErr } = await supabase
-    .from("client")
+    .from("clients")
     .select("id")
     .eq("profile_id", user.id)
     .single();
@@ -413,9 +413,7 @@ export async function logSet({ exerciseId, setNumber, reps, weight, rpe }) {
       actual_rpe: rpeNum,
       logged_at: new Date().toISOString(),
     },
-    {
-      onConflict: "client_id,exercise_id,set_number",
-    },
+    { onConflict: "client_id,exercise_id,set_number" },
   );
 
   if (error) {
