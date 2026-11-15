@@ -87,17 +87,17 @@ function RestTimer({ duration = 90 }) {
           <button
             type="button"
             onClick={startTimer}
-            className="rounded-lg text-sm text-iron border-3  border-steel px-5 py-2.5 font-medium cursor-pointer transition-colors hover:bg-steel"
+            className="rounded-lg text-sm text-iron border-3  border-steel px-4 py-2.5 font-medium cursor-pointer transition-colors hover:bg-steel"
           >
             Start {duration}s
           </button>
         ) : (
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-1.5">
             <button
               type="button"
               onClick={() => adjustTime(-15)}
               disabled={remaining <= 0}
-              className="text-sm rounded-lg border-3 border-steel px-5 py-2.5 cursor-pointer transition-colors hover:bg-steel disabled:opacity-40"
+              className="text-sm rounded-lg border-3 border-steel px-4 py-2.5 cursor-pointer transition-colors hover:bg-steel disabled:opacity-40"
             >
               -15s
             </button>
@@ -105,7 +105,7 @@ function RestTimer({ duration = 90 }) {
             <button
               type="button"
               onClick={isRunning ? pauseTimer : resumeTimer}
-              className="rounded-lg border-3 border-steel text-iron px-5 py-2 text-sm font-medium transition-colors cursor-pointer hover:bg-steel"
+              className="rounded-lg border-3 border-steel text-iron px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer hover:bg-steel"
             >
               {isRunning ? "Pause" : "Resume"}
             </button>
@@ -113,7 +113,7 @@ function RestTimer({ duration = 90 }) {
             <button
               type="button"
               onClick={() => adjustTime(15)}
-              className="text-sm rounded-lg border-3 border-steel px-5 py-2.5 cursor-pointer transition-colors hover:bg-steel disabled:opacity-40"
+              className="text-sm rounded-lg border-3 border-steel px-4 py-2.5 cursor-pointer transition-colors hover:bg-steel disabled:opacity-40"
             >
               +15s
             </button>
@@ -121,7 +121,7 @@ function RestTimer({ duration = 90 }) {
             <button
               type="button"
               onClick={skipTimer}
-              className="text-sm text-rust border-3 border-steel px-5 py-2.5 rounded-lg transition-colors cursor-pointer hover:bg-rust-100 hover:border-rust-100"
+              className="text-sm text-rust border-3 border-steel px-4 py-2.5 rounded-lg transition-colors cursor-pointer hover:bg-rust-100 hover:border-rust-100"
             >
               Skip
             </button>

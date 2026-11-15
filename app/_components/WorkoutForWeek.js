@@ -34,7 +34,7 @@ async function WorkoutForWeek({ programId, selectedWeek, clientId }) {
                   <p className="font-semibold text-lg">{workout.name}</p>
                 </div>
 
-                {status === "complete" && <CheckCircle />}
+                {status === "complete" && <CheckCircle className="text-moss" />}
               </div>
 
               <div className="flex flex-col p-4.5">
