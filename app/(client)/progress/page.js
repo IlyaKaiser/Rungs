@@ -1,5 +1,9 @@
+import BestSets from "@/app/_components/BestSets";
 import ProgressStats from "@/app/_components/ProgressStats";
+import SetPageTitle from "@/app/_components/SetPageTitle";
 import StrengthTrend from "@/app/_components/StrengthTrend";
+import TrainingHistory from "@/app/_components/TrainingHistory";
+import WeeklyConsistency from "@/app/_components/WeeklyConsistency";
 import {
   getActiveProgramOverview,
   getOwnClientRecord,
@@ -34,18 +38,20 @@ async function Page({ searchParams }) {
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
-      <div className="flex flex-col gap-1">
-        <p className="font-mono text-xs uppercase tracking-wider text-slate">
+      <SetPageTitle title="Progress" />
+
+      <div className="flex flex-col gap-2">
+        <p className="text-xs uppercase text-slate font-semibold">
           Your work is adding up
         </p>
-        <h1 className="text-3xl font-medium tracking-tight">Progress</h1>
-        <p className="text-slate">
+        <h1 className="text-3xl font-semibold tracking-tight">Progress</h1>
+        <p className="text-slate text-sm">
           See what&apos;s improving — not just what&apos;s on the bar.
         </p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex rounded-xl border border-steel p-1">
+        <div className="flex gap-1 rounded-xl border border-steel p-1">
           {RANGES.map((r) => (
             <Link
               key={r.value}
@@ -58,7 +64,9 @@ async function Page({ searchParams }) {
           ))}
         </div>
 
-        <span className="font-mono text-xs text-slate">{rangeLabel}</span>
+        <span className="hidden md:inline-block text-xs text-slate">
+          {rangeLabel}
+        </span>
       </div>
 
       <ProgressStats stats={progress.stats} />
@@ -66,6 +74,22 @@ async function Page({ searchParams }) {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <StrengthTrend trend={progress.trend} />
+          <TrainingHistory history={progress.history} />
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <BestSets bestSets={progress.bestSets} />
+          {program && <WeeklyConsistency program={program} />}
+
+          <div className="flex flex-col gap-2.5 rounded-xl bg-steel/50 p-4.5">
+            <p className="font-medium">
+              Progress isn&apos;t always a heavier bar.
+            </p>
+            <p className="text-sm text-slate">
+              Better technique, steadier consistency, and simply showing up all
+              count. Keep logging how each session feels.
+            </p>
+          </div>
         </div>
       </div>
     </div>

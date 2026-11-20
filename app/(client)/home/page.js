@@ -17,7 +17,7 @@ async function Page() {
         <p className="text-xs text-slate font-semibold">
           {formatWorkoutDate(date)}
         </p>
-        <h1 className="text-3xl font-semibold">
+        <h1 className="text-3xl font-semibold tracking-tight">
           Let&apos;s get stronger, {firstName}
         </h1>
       </div>

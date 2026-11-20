@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { IBM_Plex_Sans } from "next/font/google";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 const shortDate = (date) => format(new Date(`${date}T00:00:00`), "MMM dd");
 
@@ -28,8 +37,8 @@ function TrendChart({ points }) {
   const e1rmChanged = points.length > 1 && last.e1rm !== first.e1rm;
 
   return (
-    <>
-      <p className="mt-2 text-sm text-slate">
+    <div className="flex flex-col gap-4">
+      <p className="mt-4 text-sm text-slate">
         {points.length > 1
           ? `${first.weight} → ${last.weight} kg`
           : `${first.weight} kg × ${first.reps}`}
@@ -84,14 +93,14 @@ function TrendChart({ points }) {
         ))}
       </div>
 
-      <p className="mt-4 border-t border-steel pt-3 text-sm text-slate">
+      <p className="pt-4 text-sm text-slate">
         Estimated 1-rep max: {last.e1rm} kg
         {e1rmChanged
           ? `, ${last.e1rm > first.e1rm ? "up" : "down"} from ${first.e1rm} kg`
           : ""}
         .
       </p>
-    </>
+    </div>
   );
 }
 
@@ -114,30 +123,36 @@ function StrengthTrend({ trend }) {
 
   return (
     <div className="rounded-xl border border-steel">
-      <div className="flex items-center justify-between border-b border-steel px-4 py-3">
+      <div className="flex items-center justify-between border-b border-steel px-4.5 py-3.5">
         <h2 className="font-medium">Strength trend</h2>
-        <span className="font-mono text-xs text-slate">Best working set</span>
+        <span className="text-xs text-slate">Best working set</span>
       </div>
 
       {!lift ? (
-        <p className="p-4 text-sm text-slate">
+        <p className="p-4.5 text-sm text-slate">
           Log a few sessions and your lifts will show up here.
         </p>
       ) : (
-        <div className="flex flex-col p-4">
-          <div className="flex items-center justify-between gap-3">
-            <select
-              value={lift}
-              onChange={(e) => setSelected(e.target.value)}
-              aria-label="Choose a lift"
-              className="rounded-lg border border-steel bg-paper px-3 py-2 text-sm font-medium outline-none focus:border-iron"
-            >
-              {lifts.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+        <div className="flex flex-col p-4.5">
+          <div className="flex items-center justify-between gap-4">
+            <Select value={lift} onValueChange={setSelected}>
+              <SelectTrigger
+                aria-label="Choose a lift"
+                className="w-fit rounded-lg border border-steel bg-paper px-3 py-2 text-sm font-medium focus:border-iron"
+              >
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectGroup>
+                  {lifts.map((name) => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
 
             {change !== null && (
               <span

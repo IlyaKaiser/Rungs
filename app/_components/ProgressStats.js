@@ -44,8 +44,8 @@ function ProgressStats({ stats }) {
   return (
     <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-steel bg-steel lg:grid-cols-4">
       {cards.map((card) => (
-        <div key={card.label} className="flex flex-col gap-1 bg-paper p-4">
-          <span className="truncate text-sm text-slate">{card.label}</span>
+        <div key={card.label} className="flex flex-col gap-1.5 bg-paper p-4.5">
+          <span className="truncate text-xs text-slate">{card.label}</span>
           <span className="text-3xl font-medium">{card.value}</span>
           <span
             className={`text-xs ${card.positive ? "text-moss" : "text-slate"}`}
