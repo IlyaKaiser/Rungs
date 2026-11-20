@@ -1,4 +1,5 @@
 import ProgressStats from "@/app/_components/ProgressStats";
+import StrengthTrend from "@/app/_components/StrengthTrend";
 import {
   getActiveProgramOverview,
   getOwnClientRecord,
@@ -58,8 +59,14 @@ async function Page({ searchParams }) {
         </div>
 
         <span className="font-mono text-xs text-slate">{rangeLabel}</span>
+      </div>
 
-        <ProgressStats stats={progress.stats} />
+      <ProgressStats stats={progress.stats} />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <StrengthTrend trend={progress.trend} />
+        </div>
       </div>
     </div>
   );

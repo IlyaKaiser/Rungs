@@ -1,9 +1,9 @@
 "use client";
 
-import { format } from "date-fns";
 import { useState } from "react";
+import { format } from "date-fns";
 
-const shortDate = (date) => format(new Date(`${date}T00:00:00`), "MM dd");
+const shortDate = (date) => format(new Date(`${date}T00:00:00`), "MMM dd");
 
 function TrendChart({ points }) {
   const weights = points.map((p) => p.weight);
@@ -12,86 +12,88 @@ function TrendChart({ points }) {
   const span = hi - lo || 10;
   const min = lo - span * 0.2;
   const max = hi + span * 0.2;
-}
 
-const x = (i) =>
-  points.length === 1 ? 50 : 4 + (i / (points.length - 1)) * 92;
-const y = (weight) => 100 - ((weight - main) / (max - min)) * 100;
+  const x = (i) =>
+    points.length === 1 ? 50 : 4 + (i / (points.length - 1)) * 92;
+  const y = (weight) => 100 - ((weight - min) / (max - min)) * 100;
 
-const gridLevels = [0, 1, 2, 3].map((i) => min + ((max - min) * i) / 3);
+  const gridLevels = [0, 1, 2, 3].map((i) => min + ((max - min) * i) / 3);
 
-const first = points[0];
-const last = points.at(-1);
-const labelPoints =
-  points.length > 2
-    ? [first, points[Math.floor((points.length - 1) / 2)], last]
-    : points;
-const e1rmChanged = points.length > 1 && last.e1rm !== first.e1rm;
+  const first = points[0];
+  const last = points.at(-1);
+  const labelPoints =
+    points.length > 2
+      ? [first, points[Math.floor((points.length - 1) / 2)], last]
+      : points;
+  const e1rmChanged = points.length > 1 && last.e1rm !== first.e1rm;
 
-return (
-  <>
-    <p className="mt-2 text-sm text-slate">
-      {points.length > 1
-        ? `${first.weight} → ${last.weight} kg`
-        : `${first.weight} kg × ${first.reps}`}
-    </p>
+  return (
+    <>
+      <p className="mt-2 text-sm text-slate">
+        {points.length > 1
+          ? `${first.weight} → ${last.weight} kg`
+          : `${first.weight} kg × ${first.reps}`}
+      </p>
 
-    <div className="relative mt-4 h-48 pl-10">
-      <div className="relative h-full">
-        {gridLevels.map((level) => (
-          <div
-            key={level}
-            className="absolute left-0 right-0 border-t border-steel"
-            style={{ top: `${y(level)}%` }}
+      <div className="relative mt-4 h-48 pl-10">
+        <div className="relative h-full">
+          {gridLevels.map((level) => (
+            <div
+              key={level}
+              className="absolute left-0 right-0 border-t border-steel"
+              style={{ top: `${y(level)}%` }}
+            >
+              <span className="absolute -left-10 -translate-y-1/2 font-mono text-xs text-slate">
+                {Math.round(level)}
+              </span>
+            </div>
+          ))}
+
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
           >
-            <span className="absolute -left-10 -translate-y-1/2 font-mono text-xs text-slate">
-              {Math.round(level)}
-            </span>
-          </div>
-        ))}
+            <polyline
+              points={points.map((p, i) => `${x(i)},${y(p.weight)}`).join(" ")}
+              fill="none"
+              strokeWidth="2"
+              vectorEffect="non-scaling-stroke"
+              style={{ stroke: "var(--color-iron)" }}
+            />
+          </svg>
 
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <polyline
-            points={points.map((p, i) => `${x(i)},${y(p.weight)}`).join(" ")}
-            fill="none"
-            strokeWidth="2"
-            vectorEffect="non-scaling-stroke"
-            style={{ stroke: "var(--color-iron)" }}
-          />
-        </svg>
+          {points.map((p, i) => (
+            <div
+              key={p.date}
+              className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-iron bg-paper"
+              style={{ left: `${x(i)}%`, top: `${y(p.weight)}%` }}
+            />
+          ))}
+        </div>
+      </div>
 
-        {points.map((p, i) => (
-          <div
-            key={p.date}
-            className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-iron bg-paper"
-            style={{ left: `${x(i)}%`, top: `${y(p.weight)}%` }}
-          />
+      <div
+        className={`mt-2 flex pl-10 font-mono text-xs text-slate ${
+          points.length === 1 ? "justify-center" : "justify-between"
+        }`}
+      >
+        {labelPoints.map((p) => (
+          <span key={p.date}>{shortDate(p.date)}</span>
         ))}
       </div>
-    </div>
 
-    <div
-      className={`mt-2 flex pl-10 font-mono text-xs text-slate ${points.length === 1 ? "justify-center" : "justify-between"}`}
-    >
-      {labelPoints.map((p) => (
-        <span key={p.date}>{shortDate(p.date)}</span>
-      ))}
-    </div>
-
-    <p className="mt-4 border-t border-steel pt-3 text-sm text-slate">
-      Estimated 1-rep max: {last.e1rm} kg{" "}
-      {e1rmChanged
-        ? `, ${last.e1rm > first.e1rm ? "up" : "down"} from ${first.e1rm} kg`
-        : ""}
-      .
-    </p>
-  </>
-);
+      <p className="mt-4 border-t border-steel pt-3 text-sm text-slate">
+        Estimated 1-rep max: {last.e1rm} kg
+        {e1rmChanged
+          ? `, ${last.e1rm > first.e1rm ? "up" : "down"} from ${first.e1rm} kg`
+          : ""}
+        .
+      </p>
+    </>
+  );
+}
 
 function StrengthTrend({ trend }) {
   const lifts = Object.keys(trend).sort(
@@ -139,7 +141,9 @@ function StrengthTrend({ trend }) {
 
             {change !== null && (
               <span
-                className={`rounded-xl px-2 py-1 text-sm ${change > 0 ? "bg-moss-100 text-moss" : "bg-steel text-slate"}`}
+                className={`rounded-xl px-2 py-1 text-sm ${
+                  change > 0 ? "bg-moss-100 text-moss" : "bg-steel text-slate"
+                }`}
               >
                 {change > 0 ? "+" : ""}
                 {change}%
