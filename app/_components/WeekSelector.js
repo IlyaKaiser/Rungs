@@ -2,6 +2,7 @@
 
 import { Check } from "@boxicons/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 
 function getWeekState(week, currentWeek, progress) {
   if (progress && progress.total > 0 && progress.completed === progress.total) {
@@ -22,13 +23,23 @@ function WeekSelector({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  function handleWeekChange(week) {
-    const params = new URLSearchParams(searchParams.toString());
+  const [isPending, startTransition] = useTransition();
+  const [pendingWeek, setPendingWeek] = useState(null);
 
+  const displayWeek =
+    isPending && pendingWeek !== null ? pendingWeek : selectedWeek;
+
+  function handleWeekChange(week) {
+    if (isPending || week === selectedWeek) return;
+
+    const params = new URLSearchParams(searchParams.toString());
     params.set("week", week);
 
-    router.push(`${pathname}?${params.toString()}`, {
-      scroll: false,
+    setPendingWeek(week);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, {
+        scroll: false,
+      });
     });
   }
 
@@ -47,14 +58,19 @@ function WeekSelector({
           const progress = weekProgress[week];
           const state = getWeekState(week, currentWeek, progress);
           const isSelected = Number(week) === Number(selectedWeek);
+          const isLoadingThisWeek = isPending && week === pendingWeek;
 
           return (
             <button
               key={week}
               type="button"
               onClick={() => handleWeekChange(String(week))}
+              disabled={isPending}
+              aria-busy={isLoadingThisWeek}
               className={`flex flex-col items-center gap-0.5 rounded-lg border border-steel px-4 py-3.5 cursor-pointer transition-colors ${
-                isSelected ? "bg-iron text-paper" : "hover:bg-iron-100"
+                isSelected
+                  ? "bg-iron text-paper"
+                  : "hover:bg-iron-100 disabled:opacity-60 disabled:hover:bg-transparent"
               }`}
             >
               <span>Week {week}</span>
@@ -62,22 +78,28 @@ function WeekSelector({
               <span
                 className={`flex h-4 items-center text-xs ${
                   isSelected ? "text-paper" : "text-slate"
-                }`}
+                } ${isLoadingThisWeek ? "animate-pulse" : ""}`}
               >
-                {state === "complete" && (
-                  <Check
-                    className="size-4"
-                    style={{
-                      fill: isSelected
-                        ? "var(--color-paper)"
-                        : "var(--color-moss)",
-                    }}
-                  />
+                {isLoadingThisWeek ? (
+                  "Loading..."
+                ) : (
+                  <>
+                    {state === "complete" && (
+                      <Check
+                        className="size-4"
+                        style={{
+                          fill: isSelected
+                            ? "var(--color-paper)"
+                            : "var(--color-moss)",
+                        }}
+                      />
+                    )}
+                    {state === "current" && "Current"}
+                    {state === "upcoming" && "Upcoming"}
+                    {state === "incomplete" &&
+                      `${progress.completed}/${progress.total}`}
+                  </>
                 )}
-                {state === "current" && "Current"}
-                {state === "upcoming" && "Upcoming"}
-                {state === "incomplete" &&
-                  `${progress.completed}/${progress.total}`}
               </span>
             </button>
           );

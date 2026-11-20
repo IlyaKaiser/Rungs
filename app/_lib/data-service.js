@@ -816,6 +816,226 @@ export async function getRecentActivity(clientId, limit = 10) {
     .slice(0, limit);
 }
 
+export async function getProgressData(clientId, range = "block") {
+  const supabase = await createClient();
+
+  const [workoutsResult, completionsResult] = await Promise.all([
+    supabase
+      .from("workouts")
+      .select(
+        "id, name, week_number, day_number, programs!inner(start_date, status, client_id)",
+      )
+      .eq("programs.client_id", clientId),
+    supabase
+      .from("workout_completions")
+      .select("workout_id")
+      .eq("client_id", clientId),
+  ]);
+
+  if (workoutsResult.error || completionsResult.error) {
+    console.error(workoutsResult.error ?? completionsResult.error);
+    throw new Error("Progress could not be loaded");
+  }
+
+  const completedIds = new Set(completionsResult.data.map((c) => c.workout_id));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const startOf = (dateString) => new Date(`${dateString}T00:00:00`);
+
+  // A workout is "due" on: program start + (week - 1) weeks + (day - 1) days.
+  // Same assumption as getTodaysWorkout: days run in sequence from the start.
+  const workouts = workoutsResult.data.map((w) => {
+    const dueDate = startOf(w.programs.start_date);
+    dueDate.setDate(
+      dueDate.getDate() + (w.week_number - 1) * 7 + (w.day_number - 1),
+    );
+    return { id: w.id, name: w.name, dueDate };
+  });
+
+  // Start of the chosen range (null = no lower limit).
+  let since = null;
+  if (range === "4weeks") {
+    since = new Date(today);
+    since.setDate(since.getDate() - 28);
+  } else if (range === "block") {
+    const activeStarts = workoutsResult.data
+      .filter((w) => w.programs.status === "active")
+      .map((w) => startOf(w.programs.start_date));
+    since = activeStarts.length ? new Date(Math.min(...activeStarts)) : null;
+  }
+
+  const inRange = (date) => !since || date >= since;
+
+  // Workouts that should already be done: due before today, inside the range.
+  const dueWorkouts = workouts.filter(
+    (w) => w.dueDate < today && inRange(w.dueDate),
+  );
+  const completedCount = dueWorkouts.filter((w) =>
+    completedIds.has(w.id),
+  ).length;
+
+  let setsQuery = supabase
+    .from("logged_sets")
+    .select(
+      "logged_at, actual_reps, actual_weight, exercises(name, workout_id)",
+    )
+    .eq("client_id", clientId)
+    .order("logged_at", { ascending: true });
+
+  if (since) setsQuery = setsQuery.gte("logged_at", since.toISOString());
+
+  const { data: sets, error: setsErr } = await setsQuery;
+
+  if (setsErr) {
+    console.error(setsErr);
+    throw new Error("Progress could not be loaded");
+  }
+
+  // Epley formula; a single rep is already a 1RM.
+  const estimateOneRepMax = (weight, reps) =>
+    reps <= 1 ? weight : weight * (1 + reps / 30);
+
+  // Heavier wins; on a tie, more reps wins.
+  const isBetter = (a, b) =>
+    a.weight > b.weight || (a.weight === b.weight && a.reps > b.reps);
+
+  const byExercise = {}; // lowercase name -> { name, days: { "YYYY-MM-DD": best set } }
+  const byWorkout = {}; // workout id -> { first, last, count, top }
+  let totalVolume = 0;
+
+  for (const s of sets) {
+    const name = s.exercises?.name;
+    const workoutId = s.exercises?.workout_id;
+    const reps = s.actual_reps ?? 0;
+    const weight = s.actual_weight;
+    const loggedAt = new Date(s.logged_at);
+
+    if (weight != null) totalVolume += reps * weight;
+
+    if (workoutId) {
+      const session = (byWorkout[workoutId] ??= {
+        first: loggedAt,
+        last: loggedAt,
+        count: 0,
+        top: null,
+      });
+      session.count += 1;
+      if (loggedAt < session.first) session.first = loggedAt;
+      if (loggedAt > session.last) session.last = loggedAt;
+
+      if (weight != null) {
+        const candidate = { name, weight, reps };
+        if (!session.top || isBetter(candidate, session.top)) {
+          session.top = candidate;
+        }
+      }
+    }
+
+    if (name && weight != null && weight > 0) {
+      const key = name.trim().toLowerCase();
+      const day = s.logged_at.slice(0, 10);
+      const entry = (byExercise[key] ??= { name: name.trim(), days: {} });
+      const candidate = { weight, reps };
+      if (!entry.days[day] || isBetter(candidate, entry.days[day])) {
+        entry.days[day] = candidate;
+      }
+    }
+  }
+
+  // Per lift: best working set of each day (for the chart), and the best
+  // set of the whole range (for "Your best sets").
+  const trend = {};
+  const bestSets = [];
+
+  for (const { name, days } of Object.values(byExercise)) {
+    const points = Object.keys(days)
+      .sort()
+      .map((date) => ({
+        date,
+        weight: days[date].weight,
+        reps: days[date].reps,
+        e1rm: Math.round(estimateOneRepMax(days[date].weight, days[date].reps)),
+      }));
+
+    trend[name] = points;
+
+    const best = points.reduce((a, b) => (isBetter(b, a) ? b : a));
+    bestSets.push({
+      name,
+      weight: best.weight,
+      reps: best.reps,
+      date: best.date,
+      delta: points.length > 1 ? best.weight - points[0].weight : null,
+    });
+  }
+
+  bestSets.sort((a, b) => b.weight - a.weight);
+
+  // A session's length is estimated as first logged set -> last logged set.
+  // It runs a little short (it misses the first set's own duration), and
+  // anything over 4 hours is ignored as "logged later, not one session".
+  const spanMinutes = (session) => {
+    if (!session || session.count < 2) return null;
+    const minutes = (session.last - session.first) / 60000;
+    return minutes > 0 && minutes <= 240 ? Math.round(minutes) : null;
+  };
+
+  const spans = Object.values(byWorkout)
+    .map(spanMinutes)
+    .filter((minutes) => minutes !== null);
+  const avgSessionMinutes = spans.length
+    ? Math.round(spans.reduce((a, b) => a + b, 0) / spans.length)
+    : null;
+
+  // Training history: any workout with logged sets in range, plus workouts
+  // that were due in range but never touched (shown as "missed").
+  const history = workouts
+    .filter((w) => byWorkout[w.id] || (w.dueDate < today && inRange(w.dueDate)))
+    .map((w) => {
+      const session = byWorkout[w.id];
+      return {
+        id: w.id,
+        name: w.name,
+        status: completedIds.has(w.id)
+          ? "complete"
+          : session
+            ? "in_progress"
+            : "missed",
+        date: session ? session.first : w.dueDate,
+        setCount: session?.count ?? 0,
+        minutes: spanMinutes(session),
+        topSet: session?.top ?? null,
+      };
+    })
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 6)
+    .map((entry) => ({ ...entry, date: entry.date.toISOString() }));
+
+  const topBest = bestSets[0] ?? null;
+
+  return {
+    since: since ? since.toISOString() : null,
+    stats: {
+      completedCount,
+      dueCount: dueWorkouts.length,
+      consistency: dueWorkouts.length
+        ? Math.round((completedCount / dueWorkouts.length) * 100)
+        : null,
+      loggedSessionCount: Object.keys(byWorkout).length,
+      totalVolume,
+      avgSessionMinutes,
+      bestSet: topBest
+        ? { name: topBest.name, weight: topBest.weight, delta: topBest.delta }
+        : null,
+    },
+    trend,
+    bestSets: bestSets.slice(0, 3),
+    history,
+  };
+}
+
 /////////////
 // CREATE
 
