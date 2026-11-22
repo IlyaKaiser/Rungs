@@ -2,12 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
-import CoachProfile from "./Profile";
+import CoachProfile from "./CoachProfile";
 import { usePageTitle } from "./PageTitleContext";
 
 function DashboardHeader({ coach }) {
   const pathname = usePathname();
   const { title } = usePageTitle();
+
+  console.log(coach);
 
   const isClientDetailPage = /^\/clients\/[0-9a-f-]{36}$/.test(pathname);
   const isLoading = isClientDetailPage && title === null;
@@ -26,7 +28,7 @@ function DashboardHeader({ coach }) {
 
       <div className="flex items-center gap-3">
         <SearchBar />
-        <CoachProfile profile={coach} />
+        <CoachProfile coach={coach} />
       </div>
     </div>
   );

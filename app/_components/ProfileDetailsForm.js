@@ -11,7 +11,7 @@ function Card({ title, aside, footnote, children }) {
     <div className="rounded-xl border border-steel">
       <div className="flex items-center justify-between border-b border-steel px-4.5 py-3.5">
         <h2 className="font-medium">{title}</h2>
-        {aside && <span className="font-mono text-xs text-slate">{aside}</span>}
+        {aside && <span className="text-xs text-slate">{aside}</span>}
       </div>
 
       <div className="flex flex-col gap-4 p-4.5">

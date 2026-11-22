@@ -7,8 +7,6 @@ import Link from "next/link";
 import { Avatar } from "../_utils/helpers";
 
 function Profile({ client }) {
-  console.log(client);
-
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -32,7 +30,7 @@ function Profile({ client }) {
           <DropdownMenu.Item className="flex items-center gap-2 font-medium px-3 py-2 text-sm rounded-lg cursor-pointer outline-none hover:bg-slate/10">
             <Link href="/profile" className="flex items-center gap-2">
               <UserCircle height={16} width={16} />
-              {client?.full_name}
+              {client.profiles?.full_name}
             </Link>
           </DropdownMenu.Item>
 
