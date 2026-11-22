@@ -4,7 +4,6 @@ import { format } from "date-fns";
 
 async function RecentTraining({ client }) {
   const recentTraining = await getRecentTrainings(client.id);
-  console.log(recentTraining);
 
   return (
     <div className="border border-steel rounded-xl">

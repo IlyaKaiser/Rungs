@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} antialiased `}
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} antialiased scroll-smooth`}
     >
       <body className="flex flex-col font-sans min-h-screen bg-paper text-ink">
         <div>

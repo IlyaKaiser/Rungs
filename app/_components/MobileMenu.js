@@ -33,18 +33,23 @@ function MobileMenu({ isLoggedIn }) {
         </div>
         <ul className="flex flex-col gap-6 px-6">
           <li>
-            <Link href="#" onClick={() => setIsOpen(false)}>
-              Features
+            <Link href="/#capabilities" onClick={() => setIsOpen(false)}>
+              Capabilities
             </Link>
           </li>
           <li>
-            <Link href="#" onClick={() => setIsOpen(false)}>
+            <Link href="/#rungs-loop" onClick={() => setIsOpen(false)}>
+              Rungs loop
+            </Link>
+          </li>
+          <li>
+            <Link href="/#pricing" onClick={() => setIsOpen(false)}>
               Pricing
             </Link>
           </li>
           <li>
-            <Link href="#" onClick={() => setIsOpen(false)}>
-              About
+            <Link href="/#metrics" onClick={() => setIsOpen(false)}>
+              Metrics
             </Link>
           </li>
           <li>

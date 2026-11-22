@@ -421,3 +421,176 @@ export async function logSet({ exerciseId, setNumber, reps, weight, rpe }) {
     throw new Error("Set could not be saved");
   }
 }
+
+// Paste into app/_lib/actions.js (it already has "use server" at the top
+// and imports createClient and revalidatePath).
+
+export async function updateAvatar(formData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const file = formData.get("avatar");
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("No image received");
+  }
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error("Unsupported image type");
+  }
+  if (file.size > 1024 * 1024) {
+    throw new Error("Image is too large");
+  }
+
+  const extension =
+    file.type === "image/png"
+      ? "png"
+      : file.type === "image/webp"
+        ? "webp"
+        : "jpg";
+
+  // A new file name every time, so browsers and the CDN never show a
+  // cached copy of the previous photo.
+  const path = `${user.id}/avatar-${Date.now()}.${extension}`;
+
+  const { error: uploadErr } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
+
+  if (uploadErr) {
+    console.error(uploadErr);
+    throw new Error("Photo could not be uploaded");
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("avatars").getPublicUrl(path);
+
+  const { error: updateErr } = await supabase
+    .from("profiles")
+    .update({ avatar_url: publicUrl })
+    .eq("id", user.id)
+    .select("id")
+    .single();
+
+  if (updateErr) {
+    console.error(updateErr);
+    await supabase.storage.from("avatars").remove([path]); // don't leave an orphan
+    throw new Error("Photo could not be saved");
+  }
+
+  // Best-effort cleanup: delete this user's older photos.
+  const { data: existing } = await supabase.storage
+    .from("avatars")
+    .list(user.id);
+  const stale = (existing ?? [])
+    .map((f) => `${user.id}/${f.name}`)
+    .filter((p) => p !== path);
+  if (stale.length > 0) {
+    await supabase.storage.from("avatars").remove(stale);
+  }
+
+  revalidatePath("/", "layout");
+}
+
+export async function saveAthleteProfile(values) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  // Everything from the browser is untrusted, so it's all re-checked here.
+  const fullName = String(values.fullName ?? "").trim();
+  if (!fullName || fullName.length > 80) throw new Error("Invalid name");
+
+  const toNumber = (value) =>
+    value === "" || value == null ? null : Number(value);
+
+  const heightCm = toNumber(values.heightCm);
+  if (heightCm !== null && !(heightCm >= 50 && heightCm <= 260)) {
+    throw new Error("Invalid height");
+  }
+
+  const bodyweightKg = toNumber(values.bodyweightKg);
+  if (bodyweightKg !== null && !(bodyweightKg >= 20 && bodyweightKg <= 400)) {
+    throw new Error("Invalid bodyweight");
+  }
+
+  const dateOfBirth = values.dateOfBirth || null;
+  if (dateOfBirth !== null) {
+    const parsed = new Date(`${dateOfBirth}T00:00:00`);
+    if (
+      Number.isNaN(parsed.getTime()) ||
+      parsed > new Date() ||
+      parsed < new Date("1900-01-01T00:00:00")
+    ) {
+      throw new Error("Invalid date of birth");
+    }
+  }
+
+  const cleanText = (value, max) => {
+    const text = String(value ?? "").trim();
+    if (text.length > max) throw new Error("Text is too long");
+    return text || null;
+  };
+
+  const { error: profileErr } = await supabase
+    .from("profiles")
+    .update({
+      full_name: fullName,
+      date_of_birth: dateOfBirth,
+      height_cm: heightCm,
+      primary_goal: cleanText(values.primaryGoal, 200),
+      training_experience: cleanText(values.trainingExperience, 100),
+      weekly_availability: cleanText(values.weeklyAvailability, 100),
+      injuries: cleanText(values.injuries, 1000),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
+    .select("id")
+    .single();
+
+  if (profileErr) {
+    console.error(profileErr);
+    throw new Error("Profile could not be saved");
+  }
+
+  // Bodyweight lives in body_weight_logs (one row per weigh-in), so a new
+  // entry is only added when the number actually changed.
+  if (bodyweightKg !== null) {
+    const { data: client } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("profile_id", user.id)
+      .maybeSingle();
+
+    if (client) {
+      const { data: latest } = await supabase
+        .from("body_weight_logs")
+        .select("weight")
+        .eq("client_id", client.id)
+        .order("logged_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!latest || Number(latest.weight) !== bodyweightKg) {
+        const { error: weightErr } = await supabase
+          .from("body_weight_logs")
+          .insert({ client_id: client.id, weight: bodyweightKg });
+
+        if (weightErr) {
+          console.error(weightErr);
+          throw new Error("Bodyweight could not be saved");
+        }
+      }
+    }
+  }
+
+  revalidatePath("/", "layout");
+}

@@ -50,7 +50,7 @@ export async function getOwnClientRecord() {
   const { data, error } = await supabase
     .from("clients")
     .select(
-      "id, status, joined_at, profiles!clients_profile_id_fkey(full_name, role), coach:profiles!clients_coach_id_fkey(full_name, avatar_url)",
+      "id, status, joined_at, profiles!clients_profile_id_fkey(full_name, role, avatar_url), coach:profiles!clients_coach_id_fkey(full_name, avatar_url)",
     )
     .eq("profile_id", user.id)
     .single();
@@ -61,6 +61,44 @@ export async function getOwnClientRecord() {
   }
 
   return data;
+}
+
+export async function getAthleteProfileDetails(clientId) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const [profileResult, weightResult] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "full_name, avatar_url, date_of_birth, height_cm, primary_goal, training_experience, weekly_availability, injuries, updated_at",
+      )
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("body_weight_logs")
+      .select("weight")
+      .eq("client_id", clientId)
+      .order("logged_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (profileResult.error || weightResult.error) {
+    console.error(profileResult.error ?? weightResult.error);
+    throw new Error("Profile could not be loaded");
+  }
+
+  return {
+    ...profileResult.data,
+    email: user.email,
+    bodyweight: weightResult.data?.weight ?? null,
+  };
 }
 
 export async function getBodyWeightLogs(clientId) {

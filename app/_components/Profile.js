@@ -4,25 +4,22 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import SignOutButtonProfile from "./SignOutButtonProfile";
 import { HelpCircle, PlusCircle, UserCircle } from "@boxicons/react";
 import Link from "next/link";
-import { getInitials } from "../_utils/helpers";
+import { Avatar } from "../_utils/helpers";
 
-function Profile({ profile }) {
+function Profile({ client }) {
+  console.log(client);
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button className="flex items-center gap-2 outline-none cursor-pointer">
-          {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt="Avatar"
-              referrerPolicy="no-referrer"
-              className="w-11 h-11 rounded-lg object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-lg bg-iron-100 text-iron flex items-center justify-center text-sm font-medium">
-              {getInitials(profile?.full_name)}
-            </div>
-          )}
+          <Avatar
+            client={{
+              avatarUrl: client.profiles.avatar_url,
+              profiles: { full_name: client.profiles.full_name },
+            }}
+            radius={"rounded-lg"}
+          />
         </button>
       </DropdownMenu.Trigger>
 
@@ -35,11 +32,11 @@ function Profile({ profile }) {
           <DropdownMenu.Item className="flex items-center gap-2 font-medium px-3 py-2 text-sm rounded-lg cursor-pointer outline-none hover:bg-slate/10">
             <Link href="/profile" className="flex items-center gap-2">
               <UserCircle height={16} width={16} />
-              {profile?.full_name}
+              {client?.full_name}
             </Link>
           </DropdownMenu.Item>
 
-          {profile?.role === "athlete" ? null : (
+          {client.profile?.role === "athlete" ? null : (
             <DropdownMenu.Item className="font-medium px-3 py-2 text-sm rounded-lg cursor-pointer outline-none hover:bg-slate/10">
               <Link href="/invite" className="flex items-center gap-2">
                 <PlusCircle height={16} width={16} />

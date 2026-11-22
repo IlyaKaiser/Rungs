@@ -5,7 +5,7 @@ import { usePageTitle } from "./PageTitleContext";
 import Profile from "./Profile";
 import Logo from "./Logo";
 
-function ClientHeader({ profile }) {
+function ClientHeader({ client }) {
   const pathname = usePathname();
   const { title } = usePageTitle();
 
@@ -27,7 +27,7 @@ function ClientHeader({ profile }) {
       )}
 
       <div className="flex items-center gap-3">
-        <Profile profile={profile} />
+        <Profile client={client} />
       </div>
     </div>
   );

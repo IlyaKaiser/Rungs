@@ -39,10 +39,14 @@ async function Page() {
                 tracking.
               </h3>
               <Link
-                href="#"
+                href={!!user ? "/dashboard" : "/login"}
                 className="bg-iron text-paper border-2 border-transparent px-6 py-3 rounded-lg hover:text-iron hover:bg-paper hover:border-iron transition-colors"
               >
-                Get Started for Free &rarr;
+                {!!user ? (
+                  <p>Go to dashboard</p>
+                ) : (
+                  <p>Get Started for Free &rarr;</p>
+                )}
               </Link>
             </div>
             <div className="relative w-full h-[300px] md:h-[380px]">
@@ -81,7 +85,7 @@ async function Page() {
         <Pricing />
       </section>
 
-      <section className="py-20">
+      <section id="metrics" className="py-20">
         <Metrics />
       </section>
 
