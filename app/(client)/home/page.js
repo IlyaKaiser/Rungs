@@ -4,6 +4,7 @@ import TodaysSession from "@/app/_components/TodaysSession";
 import { formatWorkoutDate } from "@/app/_utils/helpers";
 import { getOwnClientRecord } from "@/app/_lib/data-service";
 import { Moon } from "@boxicons/react";
+import SetPageTitle from "@/app/_components/SetPageTitle";
 
 async function Page() {
   const client = await getOwnClientRecord();
@@ -13,6 +14,8 @@ async function Page() {
 
   return (
     <div className="flex flex-col gap-8">
+      <SetPageTitle title="Home" />
+
       <div className="flex flex-col gap-2">
         <p className="text-xs text-slate font-semibold">
           {formatWorkoutDate(date)}

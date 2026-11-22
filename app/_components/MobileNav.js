@@ -24,7 +24,7 @@ const NAV_TABS = {
     { href: "/home", label: "Home", Icon: HomeAlt },
     { href: "/program", label: "My Program", Icon: CalendarAlt },
     { href: "/progress", label: "Progress", Icon: ChartTrend },
-    { href: "/profile", label: "Profile", Icon: User },
+    { href: "/user-profile", label: "Profile", Icon: User },
   ],
 };
 

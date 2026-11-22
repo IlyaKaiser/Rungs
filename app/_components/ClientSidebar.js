@@ -37,7 +37,7 @@ function ClientSidebar() {
             <span>Progress</span>
           </NavLink>
           <NavLink
-            href="/profile"
+            href="/user-profile"
             className="flex items-center gap-2 p-4 text-slate"
           >
             <User />

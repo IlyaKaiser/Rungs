@@ -16,10 +16,10 @@ function Profile({ profile }) {
               src={profile.avatar_url}
               alt="Avatar"
               referrerPolicy="no-referrer"
-              className="w-11 h-11 rounded-xl object-cover"
+              className="w-11 h-11 rounded-lg object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-iron-100 flex items-center justify-center text-sm font-medium">
+            <div className="w-10 h-10 rounded-lg bg-iron-100 text-iron flex items-center justify-center text-sm font-medium">
               {getInitials(profile?.full_name)}
             </div>
           )}

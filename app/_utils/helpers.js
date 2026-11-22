@@ -11,19 +11,25 @@ export function getInitials(fullName) {
     .toUpperCase();
 }
 
-export function Avatar({ client, width = 32, height = 32 }) {
+export function Avatar({
+  client,
+  width = 32,
+  height = 32,
+  radius = "rounded-xl",
+  textSize = "text-xs",
+}) {
   return client.avatarUrl ? (
     <Image
       src={client.avatarUrl}
       alt="user avatar"
       width={width}
       height={height}
-      className="rounded-xl"
+      className={`${radius}`}
     />
   ) : (
     <div
       style={{ width, height }}
-      className="flex items-center justify-center bg-iron-100 text-iron-600 text-xs font-medium rounded-xl shrink-0"
+      className={`flex items-center justify-center bg-iron-100 text-iron ${textSize} font-medium ${radius} shrink-0`}
     >
       {getInitials(client.profiles?.full_name)}
     </div>
