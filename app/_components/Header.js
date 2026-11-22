@@ -32,13 +32,16 @@ function Header({ isLoggedIn }) {
           <div className="hidden md:block">
             <ul className="flex gap-8">
               <li className="hover:text-slate">
-                <Link href="#">Features</Link>
+                <Link href="/#capabilities">Capabilities</Link>
               </li>
               <li className="hover:text-slate">
-                <Link href="#">Pricing</Link>
+                <Link href="/#rungs-loop">Rungs loop</Link>
               </li>
               <li className="hover:text-slate">
-                <Link href="#">About</Link>
+                <Link href="/#pricing">Pricing</Link>
+              </li>
+              <li className="hover:text-slate">
+                <Link href="/#metrics">Metrics</Link>
               </li>
             </ul>
           </div>
