@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Rungs
+
+**A smarter way to manage strength training.**
+
+Rungs is a strength training platform designed to connect coaches and athletes through structured workout programs, training logs, and progress tracking.
+
+Instead of relying on spreadsheets, scattered messages, and manual tracking, Rungs gives coaches a centralized way to manage their clients' training and gives athletes a clear picture of their progress.
+
+🔗 **Live Demo:** https://rungs-six.vercel.app
+
+---
+
+## Overview
+
+Managing multiple athletes shouldn't mean juggling spreadsheets, messages, and workout plans.
+
+Rungs streamlines the coaching workflow by bringing training programs, workout logging, and performance analytics into one place. Coaches can build and manage programs, while athletes can follow their workouts, record their performance, and track their progress over time.
+
+The goal is simple: make training more organized, measurable, and consistent.
+
+## Features
+
+- **Training Program Management** — Create, organize, and manage structured workout programs for clients.
+- **Client Management** — Keep client information and training plans organized in one place.
+- **Workout Logging** — Record exercises, sets, repetitions, and weights directly during training.
+- **Progress Tracking** — Monitor performance and training trends over time.
+- **Training Analytics** — Visualize workout consistency, training volume, and performance metrics.
+- **Coach & Client Workflows** — Separate experiences designed around the needs of coaches and athletes.
+- **Responsive Design** — Accessible across desktop and mobile devices.
+
+## Tech Stack
+
+- **Framework:** Next.js
+- **Language:** JavaScript
+- **Styling:** Tailwind CSS, Motion
+- **Backend & Database:** Supabase
+- **Authentication:** Supabase Auth
+- **Deployment:** Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js
+- npm
+- A Supabase project
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/IlyaKaiser/Rungs.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd rungs
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory and configure the following variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SITE_URL=
+```
+
+Add your Supabase project credentials to the corresponding variables.
+
+### Run Locally
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Project Goals
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Rungs aims to make strength coaching more efficient without sacrificing the quality of the coaching experience.
 
-## Learn More
+By combining structured programming, consistent workout logging, and meaningful performance data, Rungs helps coaches spend less time managing information and more time coaching.
 
-To learn more about Next.js, take a look at the following resources:
+## Author
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Ilya Jafari**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend Developer
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with care for the people who put in the work.
