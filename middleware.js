@@ -6,7 +6,7 @@ const coachPaths = [
   "/clients",
   "/invite",
   "/profile",
-  "programs",
+  "/programs",
   "/help",
 ];
 
