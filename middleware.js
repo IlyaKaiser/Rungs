@@ -12,6 +12,10 @@ const coachPaths = [
 
 const clientPaths = ["/home", "/program", "/progress", "/user-profile"];
 
+function matchesPath(pathname, path) {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 export async function middleware(request) {
   let response = NextResponse.next({ request });
 
@@ -42,9 +46,9 @@ export async function middleware(request) {
 
   const { pathname } = request.nextUrl;
 
-  const isCoachRoute = coachPaths.some((path) => pathname.startsWith(path));
-  const isClientRoute = clientPaths.some((path) => pathname.startsWith(path));
-  const isLoginRoute = pathname.startsWith("/login");
+  const isCoachRoute = coachPaths.some((path) => matchesPath(pathname, path));
+  const isClientRoute = clientPaths.some((path) => matchesPath(pathname, path));
+  const isLoginRoute = matchesPath(pathname, "/login");
 
   // Not logged in
   if ((isCoachRoute || isClientRoute) && !user) {

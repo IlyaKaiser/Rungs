@@ -9,8 +9,6 @@ function DashboardHeader({ coach }) {
   const pathname = usePathname();
   const { title } = usePageTitle();
 
-  console.log(coach);
-
   const isClientDetailPage = /^\/clients\/[0-9a-f-]{36}$/.test(pathname);
   const isLoading = isClientDetailPage && title === null;
 
